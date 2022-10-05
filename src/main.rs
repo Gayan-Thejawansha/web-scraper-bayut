@@ -3,6 +3,8 @@ use scraper;
 use scraper::Html;
 use std::collections::HashMap;
 use serde_json::Value;
+use itertools::Itertools;
+
 
 fn main() {
     const URL:&str = "https://www.bayut.com/for-sale/apartments/dubai/"; //URL to be fetched
@@ -13,10 +15,9 @@ fn main() {
     //println!("{:?}", document);
 
     let results = html_title_selector (&document, "li.ef447dde");
-    println!("{:?}", results.get(&1));
-    print_type_of(&results);
 
-    for (key, value) in &results {
+
+    for (key, value) in results.iter().sorted() {
         //println!("{}: {}", key, value);
         let filterd_document = html_fragment_parser(&value);
         //let filterd_results = html_title_selector (&filterd_document, "div._4041eb80");
@@ -41,7 +42,7 @@ fn html_parser(html_string:&str) -> Html{
     return html_content;
 }
 
-fn print_type_of<T>(_: &T) {
+fn _print_type_of<T>(_: &T) {
     println!("{}", std::any::type_name::<T>())
 }
 
@@ -64,8 +65,19 @@ fn html_fragment_parser(html_string:&str) -> Html{
     return html_content;
 }
 
-fn display_the_results(html_string:&str, counter:&i32) {
-    //let mut json_string : JsonValue = html_string.parse()?;
-    let object: Value = serde_json::from_str(html_string).unwrap();
-    println!("{} - {}",counter, object["url"]);
+fn display_the_results(json_string:&str, counter:&i32) {
+
+    let object: Value = serde_json::from_str(json_string).unwrap();
+    println!("{} -> {}",counter, object["url"].to_string().replace('"', ""));
+
+    /*Available other data from the JSON object are (except url):
+    * @type
+    * name
+    * geo -> @type, latitude, longitude
+    * floorSize -> @type, value, unitText
+    * numberOfRooms -> @type, name, value
+    * numberOfBathroomsTotal 
+    * image (Image URI)
+    * address -> @type, addressCountry, addressRegion, addressLocality
+    */
 }
